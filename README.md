@@ -2,7 +2,7 @@
 This repository contains all the code needed to complete the final project for the Localization course in Udacity's Self-Driving Car Nanodegree.
 
 [image1]: ./output/particle_filter.png "particle filter"
-[image2]: ./output/coordinate_transform.PNG "coordinate transform"
+[image2]: ./output/coordinate_transform.png "coordinate transform"
 [image3]: ./output/highest_weight_pf.png "weight (highest)"
 [image4]: ./output/average_weight_pf.png "weight (average)"
 
