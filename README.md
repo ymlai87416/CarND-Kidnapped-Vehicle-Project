@@ -3,6 +3,8 @@ This repository contains all the code needed to complete the final project for t
 
 [image1]: ./output/particle_filter.png "particle filter"
 [image2]: ./output/coordinate_transform.PNG "coordinate transform"
+[image3]: ./output/highest_weight_pf.PNG "weight (highest)"
+[image4]: ./output/average_weight_pf.PNG "weight (average)"
 
 #### Submission
 All you will submit is your completed version of `particle_filter.cpp`, which is located in the `src` directory. You should probably do a `git pull` before submitting to verify that your project passes the most up-to-date version of the grading code (there are some parameters in `src/main.cpp` which govern the requirements on accuracy and run time.)
@@ -144,7 +146,13 @@ The things the grading code is looking for are:
 
 ## Result
 
-Here is the result (TODO)
+Here is the [result](https://youtu.be/NC7rm_UeQSs). 
+
+and the average and highest weights of the particles are as follow:
+
+![alt text][image4]
+![alt text][image3]
+
 
 
 ## Particle filter implementation details
@@ -155,13 +163,13 @@ Here is the result (TODO)
 
 #### Initialization from GPS position
 
-The program use the GPS input to initialize it's initial position
+The program uses the GPS input to initialize its initial position
 
 ```cpp
 pf.init(sense_x, sense_y, sense_theta, sigma_pos);
 ```
 
-where sense_x, sense_y, and sense_theta is the latitude, longitude, and the orientation of the vehicle, while
+where sense_x, sense_y, and sense_theta is the latitude, longitude, and the orientation of the var, while
 sigma_pos is the standard deviation of the x, y, theta reading. 
 
 Particle filter takes in the 4 parameters to create a cloud of particles around the position (x, y) with different orientations.
@@ -170,7 +178,7 @@ Particle filter takes in the 4 parameters to create a cloud of particles around 
 
 #### Yaw Rate and Velocity
 
-After initialization, the particle filter continue to read input from noiseless sensor within the car. They are velocity and
+After initialization, the particle filter continues to read input from a noiseless sensor within the car. They are velocity and
 yaw rate of the car.
   
 ```cpp
@@ -180,7 +188,7 @@ pf.prediction(delta_t, sigma_pos, previous_velocity, previous_yawrate);
 ### Update Step
 
 In the prediction step, the particles are moved based on the velocity and yaw rate in the previous step. In this step,
-we also consider the landmarks' data the vehicle observed from its current position and decide which particles are more likely 
+we also consider the landmarks' data the car observed from its current position and decide which particles are more likely 
 represent the current position and which particles are not.
 
 ```cpp
@@ -193,17 +201,17 @@ pf.updateWeights(sensor_range, sigma_landmark, noisy_observations, map);
 
 #### Map Landmark position and feature measurements
 
-To use the landmark position observed from car, we must transform it back to the global coordination system. 
+To use the landmark position observed from the car, we must transform it back to the global coordinate system. 
 
 ![alt text][image2]
 
 ### Resample
 
-After the update step, the weight of each particles are updated. According to weightings of particles, resampling step 
+After the update step, the weight of each particle is updated. According to weightings of particles, resampling step 
 is done to draw a set of new particle to represent the car current state. 
 
 ```cpp
 pf.resample();
 ```
 
-The mean of x, y and theta represent a prediction of current vehicle position and orientation. 
+The mean of x, y and theta represent a prediction of current car position and orientation. 
