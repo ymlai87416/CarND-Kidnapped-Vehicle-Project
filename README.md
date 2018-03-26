@@ -3,8 +3,8 @@ This repository contains all the code needed to complete the final project for t
 
 [image1]: ./output/particle_filter.png "particle filter"
 [image2]: ./output/coordinate_transform.PNG "coordinate transform"
-[image3]: ./output/highest_weight_pf.PNG "weight (highest)"
-[image4]: ./output/average_weight_pf.PNG "weight (average)"
+[image3]: ./output/highest_weight_pf.png "weight (highest)"
+[image4]: ./output/average_weight_pf.png "weight (average)"
 
 #### Submission
 All you will submit is your completed version of `particle_filter.cpp`, which is located in the `src` directory. You should probably do a `git pull` before submitting to verify that your project passes the most up-to-date version of the grading code (there are some parameters in `src/main.cpp` which govern the requirements on accuracy and run time.)
