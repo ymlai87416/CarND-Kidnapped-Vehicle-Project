@@ -105,7 +105,7 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
 
-  //use k-d tree to finish it.
+  //can improve from kd tree
   for (unsigned int i = 0; i < observations.size(); i++) {
 
     // grab current observation
@@ -136,6 +136,67 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
   }
 }
 
+vector<LandmarkObs> transformObservationFromCarToWorld(double particle_x, double particle_y, double particle_theta, const vector<LandmarkObs> &observations){
+  vector<LandmarkObs> transformed_observations;
+
+  for (int j = 0; j < observations.size(); j++) {
+    LandmarkObs transformed_obs;
+    transformed_obs.id = j;
+    transformed_obs.x = particle_x + (cos(particle_theta) * observations[j].x) - (sin(particle_theta) * observations[j].y);
+    transformed_obs.y = particle_y + (sin(particle_theta) * observations[j].x) + (cos(particle_theta) * observations[j].y);
+    transformed_observations.push_back(transformed_obs);
+  }
+  return transformed_observations;
+}
+
+vector<LandmarkObs> filterLandmarkInSensorRange(double particle_x, double particle_y, double sensor_range, const Map &map_landmarks){
+  vector<LandmarkObs> filtered_landmarks;
+
+  //can improve from kd tree
+  for (int j = 0; j < map_landmarks.landmark_list.size(); j++) {
+    Map::single_landmark_s current_landmark = map_landmarks.landmark_list[j];
+
+    if (dist(particle_x, particle_y, current_landmark.x_f, current_landmark.y_f) <= sensor_range){
+      filtered_landmarks.push_back(LandmarkObs {current_landmark.id_i, current_landmark.x_f, current_landmark.y_f});
+    }
+  }
+
+  return filtered_landmarks;
+}
+
+double updateParticleWeight(const vector<LandmarkObs> & transformed_observations, const vector<LandmarkObs> & observations, double std_landmark[2]){
+  double weight = 1.0;
+
+  double sigma_x = std_landmark[0];
+  double sigma_y = std_landmark[1];
+  double sigma_x_2 = pow(sigma_x, 2);
+  double sigma_y_2 = pow(sigma_y, 2);
+  double normalizer = (1.0/(2.0 * M_PI * sigma_x * sigma_y));
+  int k, l;
+
+  for (k = 0; k < transformed_observations.size(); k++) {
+    double trans_obs_x = transformed_observations[k].x;
+    double trans_obs_y = transformed_observations[k].y;
+    double trans_obs_id = transformed_observations[k].id;
+    double multi_prob;
+
+    for (l = 0; l < observations.size(); l++) {
+      double pred_landmark_x = observations[l].x;
+      double pred_landmark_y = observations[l].y;
+      double pred_landmark_id = observations[l].id;
+
+      if (trans_obs_id == pred_landmark_id) {
+        multi_prob = normalizer * exp(-1.0 * ((pow((trans_obs_x - pred_landmark_x), 2)/(2.0 * sigma_x_2)) + (pow((trans_obs_y - pred_landmark_y), 2)/(2.0 * sigma_y_2))));
+        weight *= multi_prob;
+      }
+    }
+  }
+
+  return weight;
+}
+
+
+
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[], 
 		const std::vector<LandmarkObs> &observations, const Map &map_landmarks) {
 	// TODO: Update the weights of each particle using a mult-variate Gaussian distribution. You can read
@@ -149,7 +210,27 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
 
+  double total_weight = 0.0;
+  for(int i=0; i<num_particles; ++i){
+    double particle_x = particles[i].x;
+    double particle_y = particles[i].y;
+    double particle_theta = particles[i].theta;
 
+    vector<LandmarkObs> transformed_observation = transformObservationFromCarToWorld(particle_x, particle_y, particle_theta, observations);
+
+    vector<LandmarkObs> filtered_observation = filterLandmarkInSensorRange(particle_x, particle_y, sensor_range, map_landmarks);
+
+    dataAssociation(filtered_observation, transformed_observation);
+
+    double new_weight = updateParticleWeight(transformed_observation, filtered_observation, std_landmark);
+
+    particles[i].weight = new_weight;
+    total_weight += particles[i].weight;
+  }
+
+  for(int i=0; i<particles.size(); ++i){
+    particles[i].weight /= total_weight;
+  }
 }
 
 void ParticleFilter::resample() {
@@ -160,7 +241,7 @@ void ParticleFilter::resample() {
   vector<Particle> new_particles;
 
   // get all of the current weights
-  vector<double> weights;
+  weights.clear();
   for (int i = 0; i < num_particles; i++) {
     weights.push_back(particles[i].weight);
   }

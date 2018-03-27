@@ -3,6 +3,8 @@
 //
 
 #include "kdtree.h"
+#include <stdio.h>
+#include <string.h>
 
 #define MAX_DIM 2
 
@@ -10,6 +12,9 @@ struct kd_node_t{
   double x[MAX_DIM];
   struct kd_node_t *left, *right;
 };
+
+struct kd_node_t* root;
+struct kd_node_t* landmarks_node;
 
 inline double
 dist(struct kd_node_t *a, struct kd_node_t *b, int dim)
@@ -126,10 +131,10 @@ LandmarkObs KDTree::find_nearest(LandmarkObs point) {
   point_t.x[0] = point.x;
   point_t.x[1] = point.y;
 
-  nearest(root, point_t, 0, 2, &found, &best_dist);
+  nearest(root, &point_t, 0, 2, &found, &best_dist);
 }
 
-KDTree::~KDTree(std::vector<LandmarkObs> landmarks) {
+KDTree::~KDTree() {
 
   free(landmarks_node);
 }

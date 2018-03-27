@@ -6,6 +6,7 @@
 #define PARTICLE_FILTER_KDTREE_H
 
 #include "helper_functions.h"
+#include <stdlib.h>
 
 #define DIM 2
 class KDTree {
@@ -15,15 +16,6 @@ public:
   ~KDTree();
 
   LandmarkObs find_nearest(LandmarkObs point);
-
-private:
-  struct kd_node_t{
-    double x[DIM];
-    struct kd_node_t *left, *right;
-  };
-
-  struct kd_node_t* root;
-  struct kd_node_t* landmarks_node;
 };
 
 
